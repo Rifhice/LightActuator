@@ -8,8 +8,8 @@ const registration_data = require("./registration.json");
 
 var socket = new JsonSocket(new net.Socket());
 socket.connect(
-  1337,
-  "192.168.0.24"
+  config.Server_Port,
+  config.Server_Ip
 );
 
 const action = {
@@ -94,8 +94,8 @@ socket.on("close", function(err) {
   isBulbConnected = false;
   if (!err) {
     socket.connect(
-      1337,
-      "192.168.0.24"
+      config.Server_Port,
+      config.Server_Ip
     );
   }
 });
@@ -103,7 +103,7 @@ socket.on("close", function(err) {
 socket.on("error", err => {
   console.log("Error");
   socket.connect(
-    1337,
-    "192.168.0.24"
+    config.Server_Port,
+    config.Server_Ip
   );
 });
