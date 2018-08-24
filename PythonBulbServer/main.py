@@ -14,21 +14,15 @@ socket.listen(5)
 client, address = socket.accept()
 print("{} connected".format( address ))
 
-def handleCommand(command):
-    if command == 'set':
-        arg = response.split(' ')[1]
-        if arg == 'on':
-            bulb.turn_on()
-        elif arg == 'off':
-            bulb.turn_off()
-        client.send("success")
-while True:
+def handleCommand(command,response):
     try:
-        response = client.recv(255)
-        if response != "":
-            print("Python server received : {}".format(response))
-            command = response.split(' ')[0]
-            handleCommand(command)
+        if command == 'set':
+            arg = response.split(' ')[1]
+            if arg == 'on':
+                bulb.turn_on()
+            elif arg == 'off':
+                bulb.turn_off()
+            client.send("success")
     except Exception as e:
         print("Error : {}".format(e))
         client.send("disconnected")
@@ -41,7 +35,14 @@ while True:
                     found = True
                     client.send("reconnected")
         time.sleep(1)
-        handleCommand(command)
+        handleCommand(command, response)
+
+while True:
+    response = client.recv(255)
+    if response != "":
+        print("Python server received : {}".format(response))
+        command = response.split(' ')[0]
+        handleCommand(command, response)
 
 sys.stdout.write("Close")
 client.close()
