@@ -27,7 +27,8 @@ function onExecute(data) {
 function onRegistration(data) {
   if (data.result === "success") {
     console.log("Registration success");
-    fs.writeFile("./config.json", JSON.stringify({ id: data.id }), err => {
+    config.id = data.id;
+    fs.writeFile("./config.json", JSON.stringify(config), err => {
       if (err) return console.log(err);
       console.log("The file was saved!");
       config.id = data.id;
