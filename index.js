@@ -2,7 +2,7 @@ const net = require("net");
 const JsonSocket = require("json-socket");
 const fs = require("fs");
 const config = require("./config.json");
-const PythonInterface = require("./PythonInterface");
+const ScriptExecutor = require("./ScriptExecutor");
 
 const registration_data = require("./registration.json");
 
@@ -20,8 +20,25 @@ const action = {
 };
 
 function onExecute(data) {
-  console.log("Received action => " + data.executable);
-  PythonInterface.sendAction(data.executable);
+  console.log("Execute action => " + data.executable);
+  ScriptExecutor.sendAction(data.executable)
+    .then(res => {
+      console.log("Sending update");
+      socket.sendMessage({
+        action: "execute",
+        result: "success",
+        actuatorId: data.actuatorId,
+        data: data.data,
+        actionKey: data.actionKey
+      });
+    })
+    .catch(err => {
+      socket.sendMessage({
+        action: "execute",
+        result: "error"
+      });
+      console.log(err);
+    });
 }
 
 function onRegistration(data) {
@@ -65,20 +82,7 @@ function onSocketConnection() {
     });
   }
 }
-PythonInterface.onStateChange(isConnected => {
-  if (!isConnected) {
-    socket.sendMessage({
-      action: "disconnection",
-      data: [config.id, registration_data]
-    });
-  } else {
-    socket.sendMessage({
-      action: "connection",
-      data: [config.id, registration_data]
-    });
-  }
-  console.log("Is Light bulb connected :  " + isConnected);
-});
+
 socket.on("connect", function() {
   onSocketConnection();
 
@@ -92,7 +96,6 @@ socket.on("connect", function() {
 
 socket.on("close", function(err) {
   console.log("Connection closed");
-  isBulbConnected = false;
   if (!err) {
     socket.connect(
       config.Server_Port,
